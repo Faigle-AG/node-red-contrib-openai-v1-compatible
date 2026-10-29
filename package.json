@@ -1,6 +1,6 @@
 {
   "name": "@faigle/node-red-contrib-openai-v1-compatible",
-  "version": "0.1.5",
+  "version": "0.1.8",
   "description": "Provider-agnostic OpenAI V1 Chat Completions node for Node-RED",
   "keywords": [
     "node-red",
@@ -49,7 +49,7 @@
   ],
   "scripts": {
     "prepare": "npx --yes husky",
-    "test": "mocha \"test/**/*_spec.js\"",
+    "test": "mocha \"test/**/*_spec.js\" && node --test test/*.test.js",
     "format": "prettier --write \"**/*.{js,html,md}\"",
     "lint": "eslint \"**/*.{js,html}\"",
     "format:check": "prettier --check \"**/*.{js,html,md}\""

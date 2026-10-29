@@ -43,7 +43,7 @@ It contains no provider presets and no provider-specific request rewriting.
 
 - Node.js 22+
 - Node-RED 4+
-- `@faigle/node-red-runtime-utils` 0.4.2+
+- `@faigle/node-red-runtime-utils` `^0.6.7`
 - An endpoint implementing a sufficiently compatible `POST /chat/completions` API
 
 ## Installation
@@ -52,7 +52,7 @@ From a package tarball:
 
 ```bash
 cd ~/.node-red
-npm install /path/to/faigle-node-red-contrib-openai-v1-compatible-0.2.0.tgz
+npm install /path/to/package.tgz
 ```
 
 Restart Node-RED after installation.
@@ -219,7 +219,7 @@ msg.openaiV1.response;
 
 contains the complete parsed response.
 
-`msg.openaiV1` is reserved by the node and cannot be used as the configured message output target.
+`msg.openaiV1` is reserved for node metadata and is replaced on each successful request. Choose a separate output target such as `msg.answer`; do not use this namespace or a descendant. The current guard rejects paths beginning with `openaiV1`, but an explicit `msg.` prefix can bypass that check and the result can then be overwritten by metadata.
 
 ## Retry and timeout behavior
 
@@ -258,6 +258,21 @@ In particular, the node does not attempt to normalize:
 
 If a server accepts the request shape and returns an OpenAI-style Chat Completion response, the node can use it. Otherwise the flow or server configuration must adapt accordingly.
 
+## Portable text flow
+
+```text
+Inject (text in msg.payload) → OpenAI V1 Compatible → Debug (msg.answer)
+Catch (scoped to the processing node) → error-handling flow
+```
+
+Select a connection config and a model supported by your endpoint. Set **Input** to `msg.payload`, **Output To** to `msg.answer`, and **Output Value** to generated text. Inject `Explain Node-RED in one sentence.` A normal result is a string at `msg.answer`; the original prompt remains at `msg.payload`, and metadata is added at `msg.openaiV1`. Model answers are not deterministic examples or trusted instructions.
+
+Input sources support `msg`, `flow`, `global`, `str`, `jsonata`, and `env`; output targets support only `msg`, `flow`, and `global`. Writing to context still forwards the incoming message. Existing saved fields remain `input/inputType` and `output/outputType`.
+
+This is the common subset with Ollama and Azure Foundry: **text input → configured text output**, not interchangeable native request/response objects. Ollama uses `/api/generate` and a plain prompt prefix; Foundry uses Responses `input` and `instructions`. OpenAI's message history, extra parameters, metadata and full-response mode remain specific to this node. There is no automatic tool execution or cross-provider history conversion.
+
+Failures report through Node-RED Catch handling, not a success output. Inspect `msg.error.message` and `msg.error.code`; text mode can report `NO_TEXT_OUTPUT` for tool-only/refusal-only results. Validate generated structured data yourself and review sensitive error content before forwarding or logging it.
+
 ## Source layout
 
 ```text
@@ -272,14 +287,14 @@ The config node and processing node are registered as separate Node-RED modules.
 
 ## Development
 
-Run syntax checks:
+Run static/style checks, then tests:
 
-```bash
-npm run check
-```
-
-Run tests:
-
-```bash
+```fish
+npm run lint
+npm run format:check
 npm test
 ```
+
+`npm test` runs Mocha's `test/**/*_spec.js` suites followed by Node's built-in runner for `test/*.test.js`. A failure in either runner fails the command. Keep new tests with the appropriate runner/file suffix; do not load `node:test` cases only through Mocha.
+
+Source checkouts declare sibling runtime-utils workspaces. Record the resolved dependency version/path when comparing runs; linked local tests do not verify a fresh standalone dependency installation.

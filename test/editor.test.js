@@ -65,6 +65,8 @@ test('editor registers both nodes and matches templates/help sections', () => {
         assert.ok(html.includes(`data-help-name="${name}"`));
     }
     assert.equal(types.get('openai-v1-compatible').category, 'ai processing');
+    // Topic colour from the shared palette: LLM & AI Models, local (Soft Periwinkle).
+    assert.equal(types.get('openai-v1-compatible').color, '#9FA8DA');
     assert.equal(types.get('openai-v1-compatible').inputs, 1);
     assert.equal(types.get('openai-v1-compatible').outputs, 1);
 });
