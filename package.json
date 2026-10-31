@@ -1,6 +1,6 @@
 {
   "name": "@faigle/node-red-contrib-openai-v1-compatible",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Provider-agnostic OpenAI V1 Chat Completions node for Node-RED",
   "keywords": [
     "node-red",
@@ -42,7 +42,7 @@
     "prettier": "^3.9.4"
   },
   "dependencies": {
-    "@faigle/node-red-runtime-utils": "^0.6.7"
+    "@faigle/node-red-runtime-utils": "^0.6.9"
   },
   "workspaces": [
     "../../node-red-runtime/*"
