@@ -105,11 +105,32 @@ These examples do not imply guaranteed compatibility with any particular provide
 
 The config node also owns **Max Retries**, **Timeout (ms)**, and request-metadata logging. This keeps transport behavior consistent for all processing nodes that share the connection.
 
+## Typed Fields and Compatibility
+
+The editor offers these types in this order. `baseUrl` belongs to the shared config node; the other fields belong to the processing node.
+
+| Field             | Offered types                                            | New-node value / type               |
+| ----------------- | -------------------------------------------------------- | ----------------------------------- |
+| `baseUrl`         | `str`, `env`                                             | `https://api.openai.com/v1` / `str` |
+| `model`           | `msg`, `flow`, `global`, `str`, `jsonata`, `env`         | `""` / `str`                        |
+| `instructions`    | `msg`, `flow`, `global`, `str`, `jsonata`, `env`         | `""` / `str`                        |
+| `input`           | `msg`, `flow`, `global`, `str`, `json`, `jsonata`, `env` | `payload` / `msg`                   |
+| `extraParameters` | `msg`, `flow`, `global`, `json`, `jsonata`, `env`        | `{}` / `json`                       |
+| `output`          | `msg`, `flow`, `global`                                  | `payload` / `msg`                   |
+
+Input now offers JSON literals, and Extra Parameters now offers environment-variable values. Other changes to the lists are ordering only. Saved field names and constructor fallbacks are unchanged: omitted `input` becomes `payload`, omitted `extraParameters` becomes `{}`, and the output name is trimmed, with a blank/non-string name falling back to `payload`. Falsy type tags retain the type defaults shown above; truthy tags are validated without trimming. A falsy base URL retains its existing default URL.
+
+After the existing processing-node configuration checks, unsupported active value tags fail with `INVALID_CONFIG` and `<Label> type '<type>' is not supported`, before resolving connection settings, typed evaluation or a request. Required model/input tags are checked even with blank expressions. Falsy optional instructions/extra-parameters expressions are not type-checked or passed to typed evaluation; whitespace-only strings remain active expressions. The existing `Output must target msg, flow, or global` and `Base URL must use string or environment input` checks remain unchanged.
+
+Imported or hand-edited flows using unadvertised types may now be rejected. Malformed value/type pairs can now report the type error before a former value error, including `INVALID_CONFIG` instead of a later `INPUT_MISSING`. Successful request shapes, provider-specific validation, errors for supported-type values and output modes are unchanged.
+
+For `flow` or `global`, named-store keys use Node-RED's `#:(store)::key` syntax where that store is configured. Store availability and persistence depend on the Node-RED context configuration.
+
 ## Processing node
 
 ### Model
 
-Typed property sent unchanged as the `model` field.
+Typed property resolved to a nonblank string, trimmed, and sent as the `model` field.
 
 ### Instructions
 
@@ -141,7 +162,7 @@ msg.payload = [
 return msg;
 ```
 
-The node does not maintain conversation history between messages.
+The editor's `json` type accepts a JSON literal using the same normalization as message-resolved data: an object becomes one JSON-text user message, while an array is validated as a Chat Completions history. It is not a provider-neutral history format. The node does not maintain conversation history between messages.
 
 ### Extra Parameters
 
@@ -167,7 +188,7 @@ The following fields are always controlled by the node and therefore override va
 
 When configured, the dedicated **Max Tokens** and **Temperature** fields also override corresponding Extra Parameters values.
 
-Extra Parameters are intentionally not provider-validated.
+The `env` type resolves an environment variable. Nonblank resolved text is JSON-parsed and must produce an object, not an array or `null`; invalid text/shape reports `INVALID_EXTRA_PARAMETERS` before a request. Missing or blank resolved parameters mean no extras. Extra Parameters are intentionally not provider-validated.
 
 ### Max Tokens
 

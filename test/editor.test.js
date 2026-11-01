@@ -110,11 +110,12 @@ test('editor configures connection and processing typed inputs', () => {
         'global',
     ]);
     assert.deepEqual(Array.from(inputs.get('#node-input-extraParameters').options.types), [
-        'json',
         'msg',
         'flow',
         'global',
+        'json',
         'jsonata',
+        'env',
     ]);
 });
 

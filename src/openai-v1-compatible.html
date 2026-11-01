@@ -68,22 +68,22 @@
 
             $('#node-input-model').typedInput({
                 default: 'str',
-                types: ['str', 'env', 'msg', 'flow', 'global', 'jsonata'],
+                types: ['msg', 'flow', 'global', 'str', 'jsonata', 'env'],
                 typeField: $('#node-input-modelType'),
             });
             $('#node-input-instructions').typedInput({
                 default: 'str',
-                types: ['str', 'env', 'msg', 'flow', 'global', 'jsonata'],
+                types: ['msg', 'flow', 'global', 'str', 'jsonata', 'env'],
                 typeField: $('#node-input-instructionsType'),
             });
             $('#node-input-input').typedInput({
                 default: 'msg',
-                types: ['msg', 'flow', 'global', 'str', 'jsonata', 'env'],
+                types: ['msg', 'flow', 'global', 'str', 'json', 'jsonata', 'env'],
                 typeField: $('#node-input-inputType'),
             });
             $('#node-input-extraParameters').typedInput({
                 default: 'json',
-                types: ['json', 'msg', 'flow', 'global', 'jsonata'],
+                types: ['msg', 'flow', 'global', 'json', 'jsonata', 'env'],
                 typeField: $('#node-input-extraParametersType'),
             });
             $('#node-input-output').typedInput({
@@ -247,14 +247,14 @@ POST <Base URL>/chat/completions
 
 - **Connection** _config_  
   Shared endpoint, authentication, retry, timeout, and logging configuration.
-- **Model** _string | env | msg | flow | global | jsonata_  
+- **Model** _msg | flow | global | string | jsonata | env_ \
   Model ID sent in the `model` request field.
 - **Instructions** _optional typed value_  
   Prepended as a `system` message.
-- **Input** _msg | flow | global | str | jsonata | env_  
-  Defaults to `msg.payload`. Text becomes one `user` message. Buffers are decoded as UTF-8. Objects are JSON-encoded into a user message. A Chat Completions message array is forwarded after basic structural validation.
-- **Extra Parameters** _json | msg | flow | global | jsonata_  
-  Optional object merged into the request. Use it for fields such as `top_p`, `response_format`, `tools`, `tool_choice`, `seed`, `max_tokens`, reasoning controls, or implementation-specific extensions. `model`, `messages`, and `stream` are controlled by this node. Explicit **Max Tokens** and **Temperature** values override the same fields in Extra Parameters.
+- **Input** _msg | flow | global | str | json | jsonata | env_ \
+  Defaults to `msg.payload`. Text becomes one `user` message. Buffers are decoded as UTF-8. Objects are JSON-encoded into a user message. A Chat Completions message array, from any source including a JSON literal, is forwarded after basic structural validation.
+- **Extra Parameters** _msg | flow | global | json | jsonata | env_ \
+  Optional object merged into the request. Text, such as an environment variable, must contain a JSON object. Use it for fields such as `top_p`, `response_format`, `tools`, `tool_choice`, `seed`, `max_tokens`, reasoning controls, or implementation-specific extensions. `model`, `messages`, and `stream` are controlled by this node. Explicit **Max Tokens** and **Temperature** values override the same fields in Extra Parameters.
 - **Max Tokens** _positive integer_  
   Optional `max_completion_tokens` value. Leave blank to omit it.
 - **Temperature** _number_  

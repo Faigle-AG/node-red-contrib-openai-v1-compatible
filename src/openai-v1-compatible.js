@@ -2,6 +2,15 @@
 
 const { requestChatCompletion, makeError } = require('./lib/chat-request');
 
+// The types each typed value field offers in the editor (Phase 2.9). A configured type outside
+// these fails before anything is evaluated or requested. The output target keeps its own check.
+const TYPES = {
+    model: ['msg', 'flow', 'global', 'str', 'jsonata', 'env'],
+    instructions: ['msg', 'flow', 'global', 'str', 'jsonata', 'env'],
+    input: ['msg', 'flow', 'global', 'str', 'json', 'jsonata', 'env'],
+    extraParameters: ['msg', 'flow', 'global', 'json', 'jsonata', 'env'],
+};
+
 module.exports = function (RED) {
     const { extendNode } = require('@faigle/node-red-runtime-utils')(RED);
     const ROLES = new Set(['system', 'developer', 'user', 'assistant', 'tool', 'function']);
@@ -230,6 +239,23 @@ module.exports = function (RED) {
                     }
                 }
 
+                // Blank instructions and extra parameters are never evaluated, so their types are
+                // not checked.
+                for (const [field, label, optional] of [
+                    ['model', 'Model', false],
+                    ['instructions', 'Instructions', true],
+                    ['input', 'Input', false],
+                    ['extraParameters', 'Extra Parameters', true],
+                ]) {
+                    const type = node[`${field}Type`];
+                    if ((!optional || node[field]) && !TYPES[field].includes(type)) {
+                        throw makeError(
+                            `${label} type '${type}' is not supported`,
+                            'INVALID_CONFIG',
+                        );
+                    }
+                }
+
                 node.status.processing('calling OpenAI-compatible endpoint');
 
                 const connection = await node.configNode.getConnection();
@@ -375,3 +401,5 @@ module.exports = function (RED) {
 
     RED.nodes.registerType('openai-v1-compatible', OpenAIV1CompatibleNode);
 };
+
+module.exports.TYPES = TYPES;
